@@ -1,0 +1,94 @@
+﻿@model IEnumerable<MVC_jQuery_AutoCompleteTextBox.Models.CountryMaster>
+
+@{
+    ViewBag.Title = "Index";
+}
+<link href="~/Content/jquery-ui.min.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-ui.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#txtSearch").autocomplete({
+            source: function (request, response) {
+                var termVal= $('#txtSearch').val();
+                $.ajax({
+                    url: '@Url.Action("CountryAutoComplete", "Home")',
+                    data: { term : termVal },
+                    dataType: "json",
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                CountryName: item.CountryName,
+                                Logo: item.Logo,
+                                json: item
+                            }
+                        }))
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        //alert(errorThrown);
+                    }
+                });
+            },
+            minLength: 2,
+            focus: function (event, ui) {
+                // this is for when focus of autocomplete item
+                $('#txtSearch').val(ui.item.CountryName);
+                return false;
+            },
+            select: function (event, ui) {
+                // this is for when select autocomplete item
+                $('#txtSearch').val(ui.item.CountryName);
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            // here return item for autocomplete text box, Here is the place
+            // where we can modify data as we want to show as autocomplete item
+            return $("<li>")
+            .append("<a style='padding-left:40px; background-image:url(/CountryLogo/" + item.Logo + ");" +
+            "background-repeat:no-repeat;background-position:left center;' >" + item.CountryName + "</a>").appendTo(ul);
+        };
+    });
+</script>
+@*<script type="text/javascript">
+    $(function () {
+        $("#txtSearch").autocomplete({
+            source: '@Url.Action("CountryAutoComplete")',
+            minLength: 2
+        });
+    });
+</script>*@
+
+<br />
+<br />
+
+@using (@Html.BeginForm())
+{
+    <b>Name:</b>
+    @Html.TextBox("searchTerm", null, new { id = "txtSearch" })
+    <input type="submit" value="Search" />
+}
+<br />
+<br />
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.CountryName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Logo)
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.CountryName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Logo)
+        </td>
+    </tr>
+}
+
+</table>
